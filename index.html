@@ -1,213 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>United Family Bank Portal</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Courier New', Courier, monospace;
-            background: #1e1e2f;
-            color: #f0f0f0;
-        }
-        header {
-            background: #ff00aa;
-            padding: 1rem;
-            text-align: center;
-        }
-        header h1 {
-            margin: 0;
-            font-size: 2rem;
-            color: #fff;
-            text-shadow: 2px 2px #000;
-        }
-        .container {
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-        .card {
-            background: #2b2b45;
-            border: 2px solid #ff00aa;
-            border-radius: 10px;
-            padding: 1.5rem;
-            box-shadow: 0 0 20px #ff00aa99;
-        }
-        .card h2 {
-            color: #00ffee;
-            margin-top: 0;
-        }
-        .button {
-            background: #00ffee;
-            color: #1e1e2f;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .button:hover {
-            background: #00ccbb;
-        }
-        .input {
-            margin-top: 1rem;
-            padding: 0.5rem;
-            width: 100%;
-            max-width: 300px;
-            font-size: 1rem;
-            border-radius: 5px;
-            border: none;
-        }
-        #dashboard, #adminPanel {
-            display: none;
-        }
-        #splashScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: #000;
-            color: #00ffee;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-        #splashScreen h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-    </style>
-    <script>
-        let userData = {
-            sheldon: { checking: 1500, savings: 600, loan: 200 },
-            taylor: { checking: 950, savings: 1100, loan: 0 }
-        };
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>United Family Bank</title>
+  <style>
+    body { font-family: 'Courier New', Courier, monospace; background: #1e1e2f; color: #f0f0f0; margin: 0; }
+    header { background: #ff00aa; text-align: center; padding: 1rem; color: white; }
+    .container { padding: 2rem; }
+    .card { background: #2b2b45; border: 2px solid #ff00aa; border-radius: 10px; padding: 1.5rem; margin-bottom: 2rem; }
+    .card h2 { color: #00ffee; margin-top: 0; }
+    .input, .button { padding: 0.5rem 1rem; font-size: 1rem; border-radius: 5px; border: none; margin: 0.5rem 0; }
+    .input { width: 100%; max-width: 300px; }
+    .button { background: #00ffee; color: #1e1e2f; cursor: pointer; }
+    .button:hover { background: #00ccbb; }
+    #dashboard, #adminPanel { display: none; }
+  </style>
+  <script>
+    const defaultData = {
+      sheldon: { checking: 1500, savings: 600, loan: 200 },
+      taylor: { checking: 950, savings: 1100, loan: 0 }
+    };
 
-        function enterSite() {
-            document.getElementById("splashScreen").style.display = "none";
-        }
+    let userData = JSON.parse(localStorage.getItem('bankData')) || defaultData;
 
-        function login() {
-            const username = document.getElementById("username").value.toLowerCase();
-            const password = document.getElementById("password").value;
-            const loginCard = document.getElementById("loginCard");
+    function saveData() {
+      localStorage.setItem('bankData', JSON.stringify(userData));
+    }
 
-            if (username === "admin" && password === "secret123") {
-                loginCard.style.display = "none";
-                document.getElementById("adminPanel").style.display = "block";
-                updateAdminPanel();
-            } else if (username === "sheldon" || username === "taylor") {
-                loginCard.style.display = "none";
-                document.getElementById("dashboard").style.display = "block";
-                document.getElementById("welcomeUser").innerText = username.charAt(0).toUpperCase() + username.slice(1);
-                updateDashboard(userData[username]);
-            } else {
-                alert("Access Denied. Only registered members of United Family Bank can login.");
-            }
-        }
+    function login() {
+      const username = document.getElementById("username").value.toLowerCase();
+      const password = document.getElementById("password").value;
+      if (username === "admin" && password === "secret123") {
+        document.getElementById("loginCard").style.display = "none";
+        document.getElementById("adminPanel").style.display = "block";
+        updateAdminPanel();
+      } else if (userData[username]) {
+        document.getElementById("loginCard").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+        document.getElementById("welcomeUser").innerText = username.charAt(0).toUpperCase() + username.slice(1);
+        updateDashboard(userData[username]);
+      } else {
+        alert("Access Denied");
+      }
+    }
 
-        function updateDashboard(data) {
-            document.getElementById("checkingBalance").innerText = "$" + data.checking.toFixed(2);
-            document.getElementById("savingsBalance").innerText = "$" + data.savings.toFixed(2);
-            document.getElementById("loanRemaining").innerText = "$" + data.loan.toFixed(2);
-            document.getElementById("dashboard").style.display = "block";
-            document.getElementById("adminPanel").style.display = "none";
-        }
+    function updateDashboard(data) {
+      document.getElementById("checkingBalance").innerText = "$" + data.checking.toFixed(2);
+      document.getElementById("savingsBalance").innerText = "$" + data.savings.toFixed(2);
+      document.getElementById("loanRemaining").innerText = "$" + data.loan.toFixed(2);
+    }
 
-        function updateAdminPanel() {
-            ["sheldon", "taylor"].forEach(user => {
-                document.getElementById(user + "Checking").value = userData[user].checking;
-                document.getElementById(user + "Savings").value = userData[user].savings;
-                document.getElementById(user + "Loan").value = userData[user].loan;
-            });
-        }
+    function updateAdminPanel() {
+      for (const user in userData) {
+        document.getElementById(user + "Checking").value = userData[user].checking;
+        document.getElementById(user + "Savings").value = userData[user].savings;
+        document.getElementById(user + "Loan").value = userData[user].loan;
+      }
+    }
 
-        function saveAdminChanges() {
-            ["sheldon", "taylor"].forEach(user => {
-                userData[user].checking = parseFloat(document.getElementById(user + "Checking").value);
-                userData[user].savings = parseFloat(document.getElementById(user + "Savings").value);
-                userData[user].loan = parseFloat(document.getElementById(user + "Loan").value);
-            });
-            alert("Account information updated successfully.");
-        }
+    function saveAdminChanges() {
+      for (const user in userData) {
+        userData[user].checking = parseFloat(document.getElementById(user + "Checking").value);
+        userData[user].savings = parseFloat(document.getElementById(user + "Savings").value);
+        userData[user].loan = parseFloat(document.getElementById(user + "Loan").value);
+      }
+      saveData();
+      alert("Changes saved!");
+    }
 
-        function viewAs(user) {
-            document.getElementById("welcomeUser").innerText = user.charAt(0).toUpperCase() + user.slice(1);
-            updateDashboard(userData[user]);
-            document.getElementById("backToAdmin").style.display = "inline-block";
-        }
-
-        function backToAdmin() {
-            document.getElementById("dashboard").style.display = "none";
-            document.getElementById("adminPanel").style.display = "block";
-            document.getElementById("backToAdmin").style.display = "none";
-        }
-
-        function logout() {
-            document.getElementById("dashboard").style.display = "none";
-            document.getElementById("adminPanel").style.display = "none";
-            document.getElementById("loginCard").style.display = "block";
-        }
-    </script>
+    function logout() {
+      document.getElementById("dashboard").style.display = "none";
+      document.getElementById("adminPanel").style.display = "none";
+      document.getElementById("loginCard").style.display = "block";
+    }
+  </script>
 </head>
 <body>
-    <div id="splashScreen">
-        <h1>🏦 United Family Bank</h1>
-        <p>Retro Personal Banking System</p>
-        <button class="button" onclick="enterSite()">Enter</button>
+  <header>
+    <h1>United Family Bank</h1>
+  </header>
+  <div class="container">
+    <div class="card" id="loginCard">
+      <h2>Login</h2>
+      <input class="input" type="text" id="username" placeholder="Username">
+      <input class="input" type="password" id="password" placeholder="Password">
+      <button class="button" onclick="login()">Login</button>
     </div>
 
-    <header>
-        <h1>United Family Bank Portal</h1>
-    </header>
-    <div class="container">
-        <div class="card" id="loginCard">
-            <h2>Login to Your Account</h2>
-            <p>Enter your username and password to view your account information.</p>
-            <input class="input" type="text" id="username" placeholder="Username">
-            <input class="input" type="password" id="password" placeholder="Password">
-            <br><br>
-            <button class="button" onclick="login()">Login</button>
-        </div>
-
-        <div id="dashboard">
-            <div class="card">
-                <h2>Welcome, <span id="welcomeUser"></span>!</h2>
-                <p>Here’s your latest account info:</p>
-                <ul>
-                    <li>💳 Checking Balance: <strong id="checkingBalance"></strong></li>
-                    <li>🏦 Savings Balance: <strong id="savingsBalance"></strong></li>
-                    <li>🧾 Loan Remaining: <strong id="loanRemaining"></strong></li>
-                </ul>
-                <button id="backToAdmin" class="button" style="display:none;" onclick="backToAdmin()">Back to Admin Panel</button>
-                <button class="button" onclick="logout()">Log Out</button>
-            </div>
-        </div>
-
-        <div id="adminPanel">
-            <div class="card">
-                <h2>Admin Control Panel</h2>
-                <h3>Sheldon</h3>
-                <label>Checking: <input class="input" type="number" id="sheldonChecking"></label><br>
-                <label>Savings: <input class="input" type="number" id="sheldonSavings"></label><br>
-                <label>Loan: <input class="input" type="number" id="sheldonLoan"></label><br><br>
-                <h3>Taylor</h3>
-                <label>Checking: <input class="input" type="number" id="taylorChecking"></label><br>
-                <label>Savings: <input class="input" type="number" id="taylorSavings"></label><br>
-                <label>Loan: <input class="input" type="number" id="taylorLoan"></label><br><br>
-                <button class="button" onclick="saveAdminChanges()">Save Changes</button>
-                <hr>
-                <h3>View As User</h3>
-                <button class="button" onclick="viewAs('sheldon')">View as Sheldon</button>
-                <button class="button" onclick="viewAs('taylor')">View as Taylor</button><br><br>
-                <button class="button" onclick="logout()">Log Out</button>
-            </div>
-        </div>
+    <div class="card" id="dashboard">
+      <h2>Welcome, <span id="welcomeUser"></span>!</h2>
+      <p>💳 Checking: <strong id="checkingBalance"></strong></p>
+      <p>🏦 Savings: <strong id="savingsBalance"></strong></p>
+      <p>🧾 Loan: <strong id="loanRemaining"></strong></p>
+      <button class="button" onclick="logout()">Log Out</button>
     </div>
+
+    <div class="card" id="adminPanel">
+      <h2>Admin Panel</h2>
+      <div>
+        <h3>Sheldon</h3>
+        <input class="input" type="number" id="sheldonChecking" placeholder="Checking">
+        <input class="input" type="number" id="sheldonSavings" placeholder="Savings">
+        <input class="input" type="number" id="sheldonLoan" placeholder="Loan">
+      </div>
+      <div>
+        <h3>Taylor</h3>
+        <input class="input" type="number" id="taylorChecking" placeholder="Checking">
+        <input class="input" type="number" id="taylorSavings" placeholder="Savings">
+        <input class="input" type="number" id="taylorLoan" placeholder="Loan">
+      </div>
+      <button class="button" onclick="saveAdminChanges()">Save Changes</button>
+      <button class="button" onclick="logout()">Log Out</button>
+    </div>
+  </div>
 </body>
 </html>
